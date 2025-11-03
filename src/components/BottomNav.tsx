@@ -1,18 +1,22 @@
 import { Radio, FileText, Users, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface NavItem {
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
+  path: string;
 }
 
 export const BottomNav = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const navItems: NavItem[] = [
-    { icon: <Radio className="w-5 h-5" />, label: "Broadcast" },
-    { icon: <FileText className="w-5 h-5" />, label: "Template" },
-    { icon: <Users className="w-5 h-5" />, label: "List Contact", active: true },
-    { icon: <BarChart3 className="w-5 h-5" />, label: "Report" },
+    { icon: <Radio className="w-5 h-5" />, label: "Broadcast", path: "/broadcast" },
+    { icon: <FileText className="w-5 h-5" />, label: "Template", path: "/template" },
+    { icon: <Users className="w-5 h-5" />, label: "List Contact", path: "/" },
+    { icon: <BarChart3 className="w-5 h-5" />, label: "Report", path: "/report" },
   ];
 
   return (
@@ -21,9 +25,10 @@ export const BottomNav = () => {
         {navItems.map((item) => (
           <button
             key={item.label}
+            onClick={() => navigate(item.path)}
             className={cn(
               "flex flex-col items-center justify-center gap-1 transition-colors min-w-[60px]",
-              item.active
+              location.pathname === item.path
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             )}
