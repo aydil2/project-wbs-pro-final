@@ -11,9 +11,10 @@ interface ContactCardProps {
     text: string;
     color: "red" | "yellow" | "green";
   };
+  onLongPress?: () => void;
 }
 
-export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
+export const ContactCard = ({ name, phone, label, onLongPress }: ContactCardProps) => {
   const initial = name.charAt(0).toUpperCase();
   const [showDialog, setShowDialog] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
@@ -32,6 +33,7 @@ export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
   };
 
   const handleTouchStart = () => {
+    if (onLongPress !== undefined) return;
     const timer = setTimeout(() => {
       setShowDialog(true);
     }, 500);
@@ -46,6 +48,7 @@ export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
   };
 
   const handleMouseDown = () => {
+    if (onLongPress !== undefined) return;
     const timer = setTimeout(() => {
       setShowDialog(true);
     }, 500);

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Search, Plus, ChevronDown } from "lucide-react";
+import { Search, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ContactCard } from "@/components/ContactCard";
 import { BottomNav } from "@/components/BottomNav";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
 
   const contacts = [
     { 
@@ -45,11 +48,47 @@ const Index = () => {
     contact.phone.includes(searchQuery)
   );
 
+  const toggleContactSelection = (id: number) => {
+    setSelectedContacts(prev =>
+      prev.includes(id) ? prev.filter(cId => cId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedContacts([]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 py-8">
         {/* Header */}
-        <h1 className="text-3xl font-bold text-foreground mb-6">List Kontak</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-foreground">List Kontak</h1>
+          {selectionMode && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSelectionMode}
+              className="text-foreground"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          )}
+        </div>
+
+        {selectionMode && selectedContacts.length > 0 && (
+          <div className="mb-4 p-3 bg-primary/10 rounded-lg flex items-center justify-between">
+            <span className="text-sm font-medium text-primary">
+              {selectedContacts.length} kontak terpilih
+            </span>
+            <Button size="sm" variant="default">
+              Pilih Label
+            </Button>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="relative mb-4">
@@ -95,22 +134,44 @@ const Index = () => {
         <div className="relative">
           <div className="border border-border rounded-xl p-4 space-y-3 bg-card">
             {filteredContacts.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                name={contact.name}
-                phone={contact.phone}
-                label={contact.label}
-              />
+              <div key={contact.id} className="flex items-center gap-3">
+                {selectionMode && (
+                  <Checkbox
+                    checked={selectedContacts.includes(contact.id)}
+                    onCheckedChange={() => toggleContactSelection(contact.id)}
+                  />
+                )}
+                <div className="flex-1">
+                  <ContactCard
+                    name={contact.name}
+                    phone={contact.phone}
+                    label={contact.label}
+                    onLongPress={!selectionMode ? undefined : () => {}}
+                  />
+                </div>
+              </div>
             ))}
           </div>
 
-          {/* Add Button */}
-          <Button
-            size="icon"
-            className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full shadow-xl hover:scale-110 transition-transform"
-          >
-            <Plus className="w-8 h-8" />
-          </Button>
+          {/* Action Buttons */}
+          <div className="absolute -bottom-4 -right-4 flex gap-2">
+            {!selectionMode && (
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={toggleSelectionMode}
+                className="w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform"
+              >
+                <Checkbox className="w-6 h-6" />
+              </Button>
+            )}
+            <Button
+              size="icon"
+              className="w-16 h-16 rounded-full shadow-xl hover:scale-110 transition-transform"
+            >
+              <Plus className="w-8 h-8" />
+            </Button>
+          </div>
         </div>
       </div>
 
