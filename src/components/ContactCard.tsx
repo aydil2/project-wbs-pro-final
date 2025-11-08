@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2 } from "lucide-react";
 
 interface ContactCardProps {
   name: string;
@@ -15,8 +16,14 @@ interface ContactCardProps {
 export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
   const initial = name.charAt(0).toUpperCase();
   const [showDialog, setShowDialog] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState("");
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const labels = [
+    { id: "pegawai-baru", name: "Pegawai Baru", color: "bg-blue-400" },
+    { id: "pegawai-lama", name: "Pegawai Lama", color: "bg-yellow-400" },
+    { id: "ultramen-jingga", name: "Ultramen jingga", color: "bg-blue-300" },
+  ];
   
   const labelColors = {
     red: "bg-red-100 text-red-800",
@@ -54,7 +61,21 @@ export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
 
   const handleCancel = () => {
     setShowDialog(false);
-    setSelectedLabel("");
+    setSelectedLabels([]);
+  };
+
+  const handleToggleLabel = (labelId: string) => {
+    setSelectedLabels(prev => 
+      prev.includes(labelId) 
+        ? prev.filter(id => id !== labelId)
+        : [...prev, labelId]
+    );
+  };
+
+  const handleRemoveLabel = () => {
+    console.log("Hapus label dari kontak:", name);
+    setShowDialog(false);
+    setSelectedLabels([]);
   };
 
   return (
@@ -88,37 +109,41 @@ export const ContactCard = ({ name, phone, label }: ContactCardProps) => {
             <DialogTitle className="text-xl font-bold text-primary">Pilih label</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Select value={selectedLabel} onValueChange={setSelectedLabel}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih label" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pegawai-baru">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-400" />
-                    Pegawai Baru
-                  </div>
-                </SelectItem>
-                <SelectItem value="pegawai-lama">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                    Pegawai Lama
-                  </div>
-                </SelectItem>
-                <SelectItem value="ultramen-jingga">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-300" />
-                    Ultramen jingga
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              onClick={handleCancel}
-              className="w-full bg-red-500 hover:bg-red-600 text-white"
-            >
-              Batal
-            </Button>
+            <div className="border border-border rounded-lg p-3 space-y-3">
+              {labels.map((labelItem) => (
+                <div key={labelItem.id} className="flex items-center gap-3">
+                  <Checkbox
+                    id={labelItem.id}
+                    checked={selectedLabels.includes(labelItem.id)}
+                    onCheckedChange={() => handleToggleLabel(labelItem.id)}
+                  />
+                  <label
+                    htmlFor={labelItem.id}
+                    className="flex items-center gap-2 flex-1 cursor-pointer"
+                  >
+                    <div className={`w-3 h-3 rounded-full ${labelItem.color}`} />
+                    <span>{labelItem.name}</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleRemoveLabel}
+                variant="destructive"
+                className="flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Hapus label
+              </Button>
+              <Button 
+                onClick={handleCancel}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+              >
+                Batal
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

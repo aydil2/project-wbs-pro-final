@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ContactCard } from "@/components/ContactCard";
 import { BottomNav } from "@/components/BottomNav";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   const contacts = [
     { 
@@ -61,14 +63,33 @@ const Index = () => {
           />
         </div>
 
-        {/* Filter Button */}
-        <Button 
-          variant="outline" 
-          className="mb-4 h-10 px-4 rounded-lg font-semibold"
-        >
-          All labels
-          <ChevronDown className="ml-2 w-4 h-4" />
-        </Button>
+        {/* Filter Dropdown */}
+        <Select value={selectedFilter} onValueChange={setSelectedFilter}>
+          <SelectTrigger className="mb-4 h-10 w-40 rounded-lg font-semibold">
+            <SelectValue placeholder="All labels" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All labels</SelectItem>
+            <SelectItem value="pegawai-baru">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-400" />
+                Pegawai Baru
+              </div>
+            </SelectItem>
+            <SelectItem value="pegawai-lama">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                Pegawai Lama
+              </div>
+            </SelectItem>
+            <SelectItem value="ultramen-jingga">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                Ultramen jingga
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Contacts Container */}
         <div className="relative">
