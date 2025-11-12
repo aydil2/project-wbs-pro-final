@@ -1,6 +1,6 @@
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Upload, ChevronDown, MoreVertical } from "lucide-react";
+import { Upload, ChevronDown, MoreVertical, X, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
@@ -8,25 +8,131 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
+import { toast } from "sonner";
+
+interface Contact {
+  name: string;
+  number: string;
+}
 
 const Broadcast = () => {
-  const [selectedNumbers, setSelectedNumbers] = useState<string[]>([]);
+  const [selectedNumbers, setSelectedNumbers] = useState<Contact[]>([]);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [manualContacts, setManualContacts] = useState<Contact[]>([{ name: "", number: "" }]);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [message, setMessage] = useState("");
+  const [spinText, setSpinText] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const templates = [
+    { id: "1", name: "Template Promo", content: "Halo {nama}, dapatkan promo spesial hari ini!" },
+    { id: "2", name: "Template Reminder", content: "Hai {nama}, jangan lupa event besok ya!" },
+    { id: "3", name: "Template Info", content: "Informasi untuk {nama}: Update terbaru sudah tersedia." },
+  ];
 
   const handleImportManual = () => {
-    console.log("Import Manual");
+    setShowImportDialog(true);
   };
 
   const handleImportSS = () => {
-    console.log("Import Screenshot");
+    toast.info("Fitur Import Screenshot akan segera tersedia");
   };
 
   const handleImportCSV = () => {
-    console.log("Import CSV");
+    toast.info("Fitur Import CSV akan segera tersedia");
   };
 
   const handleImportFromContact = () => {
-    console.log("Import From Contact");
+    toast.info("Fitur Import From Contact akan segera tersedia");
+  };
+
+  const addContactRow = () => {
+    setManualContacts([...manualContacts, { name: "", number: "" }]);
+  };
+
+  const removeContactRow = (index: number) => {
+    const newContacts = manualContacts.filter((_, i) => i !== index);
+    setManualContacts(newContacts);
+  };
+
+  const updateContact = (index: number, field: keyof Contact, value: string) => {
+    const newContacts = [...manualContacts];
+    newContacts[index][field] = value;
+    setManualContacts(newContacts);
+  };
+
+  const saveManualContacts = () => {
+    const validContacts = manualContacts.filter(c => c.name && c.number);
+    if (validContacts.length === 0) {
+      toast.error("Tambahkan minimal 1 kontak yang valid");
+      return;
+    }
+    setSelectedNumbers(validContacts);
+    setShowImportDialog(false);
+    toast.success(`${validContacts.length} kontak berhasil ditambahkan`);
+  };
+
+  const handleSelectTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setSelectedTemplate(template.name);
+      setMessage(template.content);
+      setShowTemplateDialog(false);
+      toast.success(`Template "${template.name}" berhasil dipilih`);
+    }
+  };
+
+  const startBroadcast = async () => {
+    if (selectedNumbers.length === 0) {
+      toast.error("Pilih nomor WA terlebih dahulu");
+      return;
+    }
+    if (!message.trim()) {
+      toast.error("Tulis pesan terlebih dahulu");
+      return;
+    }
+
+    setIsSending(true);
+    setProgress(0);
+    setLogs([]);
+
+    // Simulasi pengiriman
+    for (let i = 0; i < selectedNumbers.length; i++) {
+      const contact = selectedNumbers[i];
+      const personalizedMessage = message.replace("{nama}", contact.name);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setProgress(((i + 1) / selectedNumbers.length) * 100);
+      setLogs(prev => [...prev, `✓ Terkirim ke ${contact.name} (${contact.number})`]);
+    }
+
+    setIsSending(false);
+    toast.success("Broadcast selesai!");
+  };
+
+  const stopBroadcast = () => {
+    setIsSending(false);
+    toast.info("Broadcast dihentikan");
   };
 
   return (
@@ -36,8 +142,8 @@ const Broadcast = () => {
         <h1 className="text-3xl font-bold text-foreground mb-4">Broadcast</h1>
 
         {/* Progress Bar */}
-        <p className="text-muted-foreground text-[10px] mb-2">Sending Progress 0%</p>
-        <div className="w-full h-[1px] bg-border mb-6"></div>
+        <p className="text-muted-foreground text-[10px] mb-2">Sending Progress {Math.round(progress)}%</p>
+        <Progress value={progress} className="h-[2px] mb-6" />
 
         {/* Nomor WA Card */}
         <div className="mb-4">
@@ -65,12 +171,12 @@ const Broadcast = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="w-full h-[106px] border border-t-0 border-border bg-card rounded-b-[3px] p-3">
+          <div className="w-full h-[106px] border border-t-0 border-border bg-card rounded-b-[3px] p-3 overflow-y-auto">
             {selectedNumbers.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {selectedNumbers.map((number, idx) => (
-                  <div key={idx} className="text-xs text-foreground bg-accent px-2 py-1 rounded">
-                    {number}
+              <div className="space-y-1">
+                {selectedNumbers.map((contact, idx) => (
+                  <div key={idx} className="text-xs text-foreground flex justify-between items-center">
+                    <span>{contact.name} - {contact.number}</span>
                   </div>
                 ))}
               </div>
@@ -87,14 +193,21 @@ const Broadcast = () => {
           </div>
           <div className="border border-t-0 border-border bg-card rounded-b-[3px] p-3">
             {/* Pilih Template */}
-            <button className="w-full h-[31px] rounded-[3px] border border-border bg-card flex items-center justify-between px-3 mb-3 hover:bg-accent transition-colors">
-              <span className="text-muted-foreground text-xs">Pilih Template</span>
+            <button 
+              onClick={() => setShowTemplateDialog(true)}
+              className="w-full h-[31px] rounded-[3px] border border-border bg-card flex items-center justify-between px-3 mb-3 hover:bg-accent transition-colors"
+            >
+              <span className={selectedTemplate ? "text-foreground text-xs" : "text-muted-foreground text-xs"}>
+                {selectedTemplate || "Pilih Template"}
+              </span>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </button>
 
             {/* Text Area */}
             <div className="w-full h-[79px] rounded-[3px] border border-border bg-card mb-3 p-2">
               <textarea 
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="w-full h-full bg-transparent resize-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
                 placeholder="Tulis pesan..."
               />
@@ -103,7 +216,7 @@ const Broadcast = () => {
             {/* SpinText Toggle */}
             <div className="flex items-center gap-3">
               <span className="text-foreground text-xs">SpinText</span>
-              <Switch />
+              <Switch checked={spinText} onCheckedChange={setSpinText} />
             </div>
           </div>
         </div>
@@ -127,10 +240,18 @@ const Broadcast = () => {
 
             {/* Action Buttons */}
             <div className="flex gap-2 justify-end">
-              <Button className="bg-[#F63033] hover:bg-[#d42528] text-white font-bold text-[15px] px-6 h-[25px] rounded-[3px]">
+              <Button 
+                onClick={stopBroadcast}
+                disabled={!isSending}
+                className="bg-[#F63033] hover:bg-[#d42528] text-white font-bold text-[15px] px-6 h-[25px] rounded-[3px] disabled:opacity-50"
+              >
                 Stop
               </Button>
-              <Button className="bg-[#30B7F6] hover:bg-[#2a9fd6] text-white font-bold text-[15px] px-6 h-[25px] rounded-[3px]">
+              <Button 
+                onClick={startBroadcast}
+                disabled={isSending}
+                className="bg-[#30B7F6] hover:bg-[#2a9fd6] text-white font-bold text-[15px] px-6 h-[25px] rounded-[3px] disabled:opacity-50"
+              >
                 Kirim
               </Button>
             </div>
@@ -154,12 +275,103 @@ const Broadcast = () => {
             </DropdownMenu>
           </div>
           <div className="w-full h-[76px] border border-t-0 border-border bg-card rounded-b-[3px] p-3 overflow-y-auto">
-            <p className="text-xs text-muted-foreground">Log broadcast akan muncul di sini...</p>
+            {logs.length > 0 ? (
+              <div className="space-y-1">
+                {logs.map((log, idx) => (
+                  <p key={idx} className="text-[10px] text-foreground">{log}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">Log broadcast akan muncul di sini...</p>
+            )}
           </div>
         </div>
       </div>
 
       <BottomNav />
+
+      {/* Import Manual Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="max-w-[320px] max-h-[500px] overflow-hidden flex flex-col">
+          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 -mx-6 -mt-6">
+            <DialogTitle className="text-white text-lg font-semibold">Import manual</DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="border border-border rounded-[3px] overflow-hidden">
+              <div className="grid grid-cols-[1fr_2fr_auto] bg-muted border-b border-border">
+                <div className="p-2 text-xs font-medium text-foreground border-r border-border">Nama</div>
+                <div className="p-2 text-xs font-medium text-foreground border-r border-border">Nomor WA</div>
+                <div className="w-10"></div>
+              </div>
+              
+              {manualContacts.map((contact, idx) => (
+                <div key={idx} className="grid grid-cols-[1fr_2fr_auto] border-b border-border last:border-b-0">
+                  <Input
+                    value={contact.name}
+                    onChange={(e) => updateContact(idx, "name", e.target.value)}
+                    placeholder="Nama"
+                    className="h-8 text-xs rounded-none border-0 border-r border-border focus-visible:ring-0"
+                  />
+                  <Input
+                    value={contact.number}
+                    onChange={(e) => updateContact(idx, "number", e.target.value)}
+                    placeholder="628xxx"
+                    className="h-8 text-xs rounded-none border-0 border-r border-border focus-visible:ring-0"
+                  />
+                  <button
+                    onClick={() => removeContactRow(idx)}
+                    className="w-10 h-8 flex items-center justify-center hover:bg-destructive/10 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-destructive" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            <Button
+              onClick={addContactRow}
+              variant="outline"
+              size="sm"
+              className="w-full mt-3"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah Baris
+            </Button>
+          </div>
+
+          <div className="flex gap-2 justify-end mt-4 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>
+              Batal
+            </Button>
+            <Button onClick={saveManualContacts} className="bg-[#30B7F6] hover:bg-[#2a9fd6]">
+              Simpan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Selection Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="max-w-[320px]">
+          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 -mx-6 -mt-6">
+            <DialogTitle className="text-white text-lg font-semibold">Pilih Template</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-2 mt-4">
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => handleSelectTemplate(template.id)}
+                className="w-full p-3 border border-border rounded-md hover:bg-accent transition-colors text-left"
+              >
+                <p className="text-sm font-medium text-foreground">{template.name}</p>
+                <p className="text-xs text-muted-foreground mt-1">{template.content}</p>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
