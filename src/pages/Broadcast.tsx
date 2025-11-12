@@ -2,8 +2,33 @@ import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Upload, ChevronDown, MoreVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 const Broadcast = () => {
+  const [selectedNumbers, setSelectedNumbers] = useState<string[]>([]);
+
+  const handleImportManual = () => {
+    console.log("Import Manual");
+  };
+
+  const handleImportSS = () => {
+    console.log("Import Screenshot");
+  };
+
+  const handleImportCSV = () => {
+    console.log("Import CSV");
+  };
+
+  const handleImportFromContact = () => {
+    console.log("Import From Contact");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-7 py-8">
@@ -18,9 +43,41 @@ const Broadcast = () => {
         <div className="mb-4">
           <div className="w-full h-[40px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center justify-between px-3 relative">
             <span className="text-white text-[15px] font-medium">Nomor WA</span>
-            <MoreVertical className="w-4 h-4 text-white" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hover:bg-white/10 rounded p-1 transition-colors">
+                  <MoreVertical className="w-4 h-4 text-white" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[140px]">
+                <DropdownMenuItem onClick={handleImportManual}>
+                  Import manual
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportSS}>
+                  Import SS
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportCSV}>
+                  Import CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportFromContact}>
+                  Import From Contact
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <div className="w-full h-[106px] border border-t-0 border-border bg-card rounded-b-[3px]"></div>
+          <div className="w-full h-[106px] border border-t-0 border-border bg-card rounded-b-[3px] p-3">
+            {selectedNumbers.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {selectedNumbers.map((number, idx) => (
+                  <div key={idx} className="text-xs text-foreground bg-accent px-2 py-1 rounded">
+                    {number}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">Pilih metode import nomor WA</p>
+            )}
+          </div>
         </div>
 
         {/* Pesan Card */}
@@ -84,9 +141,21 @@ const Broadcast = () => {
         <div className="mb-4">
           <div className="w-full h-[40px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center justify-between px-3 relative">
             <span className="text-white text-[15px] font-medium">LOG</span>
-            <MoreVertical className="w-4 h-4 text-white" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hover:bg-white/10 rounded p-1 transition-colors">
+                  <MoreVertical className="w-4 h-4 text-white" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[120px]">
+                <DropdownMenuItem>Clear Log</DropdownMenuItem>
+                <DropdownMenuItem>Export Log</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <div className="w-full h-[76px] border border-t-0 border-border bg-card rounded-b-[3px]"></div>
+          <div className="w-full h-[76px] border border-t-0 border-border bg-card rounded-b-[3px] p-3 overflow-y-auto">
+            <p className="text-xs text-muted-foreground">Log broadcast akan muncul di sini...</p>
+          </div>
         </div>
       </div>
 
