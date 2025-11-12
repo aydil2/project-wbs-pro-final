@@ -42,6 +42,7 @@ const Broadcast = () => {
   const [progress, setProgress] = useState(0);
   const [isSending, setIsSending] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const templates = [
     { id: "1", name: "Template Promo", content: "Halo {nama}, dapatkan promo spesial hari ini!" },
@@ -133,6 +134,20 @@ const Broadcast = () => {
   const stopBroadcast = () => {
     setIsSending(false);
     toast.info("Broadcast dihentikan");
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length} file berhasil diupload`);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    toast.info("File dihapus");
   };
 
   return (
@@ -229,14 +244,39 @@ const Broadcast = () => {
           <div className="border border-t-0 border-border bg-card rounded-b-[3px] p-3">
             {/* Upload Files */}
             <div className="w-full h-[43px] rounded-[3px] border border-border bg-card flex items-center px-3 mb-3">
-              <button className="flex items-center gap-2 px-3 py-1 rounded-md border border-border bg-card hover:bg-accent transition-colors">
+              <label className="flex items-center gap-2 px-3 py-1 rounded-md border border-border bg-card hover:bg-accent transition-colors cursor-pointer">
                 <Upload className="w-4 h-4" />
                 <span className="text-xs font-bold">Upload Files</span>
-              </button>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept="image/*,video/*,.pdf,.doc,.docx"
+                />
+              </label>
             </div>
 
             {/* File Display Area */}
-            <div className="w-full h-[76px] rounded-[3px] border border-border bg-card mb-3"></div>
+            <div className="w-full h-[76px] rounded-[3px] border border-border bg-card mb-3 p-2 overflow-y-auto">
+              {uploadedFiles.length > 0 ? (
+                <div className="space-y-1">
+                  {uploadedFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs">
+                      <span className="text-foreground truncate flex-1">{file.name}</span>
+                      <button
+                        onClick={() => removeFile(idx)}
+                        className="ml-2 hover:text-destructive transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">File yang diupload akan muncul di sini...</p>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-2 justify-end">
@@ -353,12 +393,12 @@ const Broadcast = () => {
 
       {/* Template Selection Dialog */}
       <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-        <DialogContent className="max-w-[320px]">
-          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 -mx-6 -mt-6">
+        <DialogContent className="max-w-[320px] p-0 gap-0">
+          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 m-0">
             <DialogTitle className="text-white text-lg font-semibold">Pilih Template</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-2 mt-4">
+          <div className="space-y-2 p-4">
             {templates.map((template) => (
               <button
                 key={template.id}
