@@ -229,10 +229,22 @@ const Broadcast = () => {
             </div>
 
             {/* SpinText Toggle */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-2">
               <span className="text-foreground text-xs">SpinText</span>
               <Switch checked={spinText} onCheckedChange={setSpinText} />
             </div>
+
+            {/* SpinText Options */}
+            {spinText && (
+              <div className="w-full rounded-[3px] border border-border bg-card p-3">
+                <p className="text-[10px] text-muted-foreground mb-2">
+                  Gunakan format: {"{"}pilihan1|pilihan2|pilihan3{"}"} dalam pesan
+                </p>
+                <p className="text-[10px] text-foreground">
+                  Contoh: Halo {"{"}nama|bro|kak{"}"}, dapatkan {"{"}diskon|potongan harga|promo{"}"} hari ini!
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -332,7 +344,7 @@ const Broadcast = () => {
 
       {/* Import Manual Dialog */}
       <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="max-w-[320px] max-h-[500px] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-[320px] max-h-[500px] overflow-hidden flex flex-col" hideClose>
           <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 -mx-6 -mt-6">
             <DialogTitle className="text-white text-lg font-semibold">Import manual</DialogTitle>
           </DialogHeader>
