@@ -6,14 +6,25 @@ import { ContactCard } from "@/components/ContactCard";
 import { BottomNav } from "@/components/BottomNav";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+
+interface Contact {
+  id: number;
+  name: string;
+  phone: string;
+  label?: { text: string; color: "red" | "yellow" | "green" };
+}
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newContact, setNewContact] = useState({ name: "", phone: "", label: "" });
 
-  const contacts = [
+  const [contacts, setContacts] = useState<Contact[]>([
     { 
       id: 1, 
       name: "Suantoni", 
@@ -41,7 +52,48 @@ const Index = () => {
       name: "Agus", 
       phone: "+62 234 5678 9999"
     },
-  ];
+  ]);
+
+  const validatePhone = (phone: string) => {
+    const cleaned = phone.replace(/\s+/g, '');
+    return cleaned.startsWith('62') && cleaned.length >= 10;
+  };
+
+  const handleAddContact = () => {
+    if (!newContact.name.trim()) {
+      toast.error("Nama tidak boleh kosong");
+      return;
+    }
+    
+    if (!newContact.phone.trim()) {
+      toast.error("Nomor WA tidak boleh kosong");
+      return;
+    }
+
+    const cleanedPhone = newContact.phone.replace(/\s+/g, '');
+    if (!validatePhone(cleanedPhone)) {
+      toast.error("Nomor WA harus dimulai dengan 62 dan minimal 10 digit");
+      return;
+    }
+
+    const labelMap: { [key: string]: { text: string; color: "red" | "yellow" | "green" } } = {
+      "ultramen-jingga": { text: "Ultramen jingga", color: "red" },
+      "pegawai-lama": { text: "pegawai lama", color: "yellow" },
+      "pegawai-baru": { text: "Pegawai Baru", color: "green" },
+    };
+
+    const newContactData: Contact = {
+      id: contacts.length + 1,
+      name: newContact.name,
+      phone: cleanedPhone.replace(/(\d{2})(\d{3})(\d{4})(\d+)/, '+$1 $2 $3 $4'),
+      label: newContact.label ? labelMap[newContact.label] : undefined,
+    };
+
+    setContacts([...contacts, newContactData]);
+    setNewContact({ name: "", phone: "", label: "" });
+    setShowAddDialog(false);
+    toast.success("Kontak berhasil ditambahkan");
+  };
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,7 +163,7 @@ const Index = () => {
             <SelectItem value="all">All labels</SelectItem>
             <SelectItem value="pegawai-baru">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
                 Pegawai Baru
               </div>
             </SelectItem>
@@ -167,6 +219,7 @@ const Index = () => {
             )}
             <Button
               size="icon"
+              onClick={() => setShowAddDialog(true)}
               className="w-16 h-16 rounded-full shadow-xl hover:scale-110 transition-transform"
             >
               <Plus className="w-8 h-8" />
@@ -176,6 +229,82 @@ const Index = () => {
       </div>
 
       <BottomNav />
+
+      {/* Add Contact Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-[320px] p-0 gap-0" hideClose>
+          <DialogHeader className="w-full h-[53px] bg-gradient-to-r from-primary to-primary/80 flex items-center px-4 m-0">
+            <DialogTitle className="text-primary-foreground text-lg font-semibold">Tambah Kontak</DialogTitle>
+          </DialogHeader>
+          
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Nama</label>
+              <Input
+                value={newContact.name}
+                onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+                placeholder="Masukkan nama"
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Nomor WA</label>
+              <Input
+                value={newContact.phone}
+                onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+                placeholder="62xxxxxxxxxx"
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Format: dimulai dengan 62, minimal 10 digit
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Label (Opsional)</label>
+              <Select value={newContact.label} onValueChange={(value) => setNewContact({ ...newContact, label: value })}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Pilih label" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tanpa Label</SelectItem>
+                  <SelectItem value="pegawai-baru">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-400" />
+                      Pegawai Baru
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="pegawai-lama">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                      Pegawai Lama
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ultramen-jingga">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      Ultramen jingga
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex gap-2 justify-end p-6 pt-0 border-t">
+            <Button variant="outline" onClick={() => {
+              setShowAddDialog(false);
+              setNewContact({ name: "", phone: "", label: "" });
+            }}>
+              Batal
+            </Button>
+            <Button onClick={handleAddContact}>
+              Simpan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
