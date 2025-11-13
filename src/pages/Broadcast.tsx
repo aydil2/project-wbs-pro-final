@@ -344,12 +344,12 @@ const Broadcast = () => {
 
       {/* Import Manual Dialog */}
       <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="max-w-[320px] max-h-[500px] overflow-hidden flex flex-col" hideClose>
-          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 -mx-6 -mt-6">
-            <DialogTitle className="text-white text-lg font-semibold">Import manual</DialogTitle>
+        <DialogContent className="max-w-[320px] max-h-[500px] overflow-hidden flex flex-col p-0" hideClose>
+          <DialogHeader className="w-full h-[53px] bg-gradient-to-r from-primary to-primary/80 flex items-center px-4">
+            <DialogTitle className="text-primary-foreground text-lg font-semibold">Import manual</DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto">
+          <div className="p-6 flex-1 overflow-y-auto flex flex-col gap-4">
             <div className="border border-border rounded-[3px] overflow-hidden">
               <div className="grid grid-cols-[1fr_2fr_auto] bg-muted border-b border-border">
                 <div className="p-2 text-xs font-medium text-foreground border-r border-border">Nama</div>
@@ -392,11 +392,11 @@ const Broadcast = () => {
             </Button>
           </div>
 
-          <div className="flex gap-2 justify-end mt-4 pt-4 border-t">
+          <div className="flex gap-2 justify-end p-6 pt-4 border-t">
             <Button variant="outline" onClick={() => setShowImportDialog(false)}>
               Batal
             </Button>
-            <Button onClick={saveManualContacts} className="bg-[#30B7F6] hover:bg-[#2a9fd6]">
+            <Button onClick={saveManualContacts}>
               Simpan
             </Button>
           </div>
@@ -406,8 +406,8 @@ const Broadcast = () => {
       {/* Template Selection Dialog */}
       <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
         <DialogContent className="max-w-[320px] p-0 gap-0">
-          <DialogHeader className="w-full h-[53px] rounded-t-[5px] bg-gradient-to-r from-[#45E3FF] to-[#147FEB] flex items-center px-4 m-0">
-            <DialogTitle className="text-white text-lg font-semibold">Pilih Template</DialogTitle>
+          <DialogHeader className="w-full h-[53px] bg-gradient-to-r from-primary to-primary/80 flex items-center px-4 m-0">
+            <DialogTitle className="text-primary-foreground text-lg font-semibold">Pilih Template</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-2 p-4">
